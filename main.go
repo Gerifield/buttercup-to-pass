@@ -105,7 +105,7 @@ func main() {
 	for _, i := range items {
 
 		if *dryRun {
-			log.Println("Would create:", filepath.Join(normalizePath(*storePath), genPassFilePath(i)), ", File:", genPassFileName(i), ", Content:", genPassContent(i))
+			log.Println("Would create:", filepath.Join(normalizePath(*storePath), genPassFilePath(i)), "\nFile:", genPassFileName(i), "\n", genPassContent(i))
 			continue
 		}
 
@@ -118,7 +118,10 @@ func main() {
 }
 
 func genPassFilePath(item bCup) string {
-	return item.GroupName + "/" + item.URL.Host
+	if item.URL.Host != "" {
+		return item.GroupName + "/" + item.URL.Host
+	}
+	return item.GroupName + "/" + convertToFileName(item.Title)
 }
 
 func genPassFileName(item bCup) string {
@@ -127,6 +130,15 @@ func genPassFileName(item bCup) string {
 	}
 
 	return convertToFileName(item.Title) + ".gpg"
+}
+
+func isFileExists(path string) bool {
+	if _, err := os.Stat(path); err == nil {
+		return true
+	} else if os.IsNotExist(err) {
+		return false
+	}
+	return false // maybe or may not
 }
 
 func convertToFileName(name string) string {
@@ -211,12 +223,27 @@ func createFolders(path string) error {
 }
 
 func encryptData(gpgPath string, keyID string, filePath string, fileName string, content string) error {
-	if err := createFolders(filePath); err != nil {
+	fileWithPath := filepath.Join(filePath, fileName)
+	if err := createFolders(filepath.Dir(fileWithPath)); err != nil {
 		return err
 	}
 
 	var stdout, stderr bytes.Buffer
-	gpgOptions := []string{"--encrypt", "--yes", "--recipient", keyID, "--output", filepath.Join(filePath, fileName)}
+
+
+	idx := 1
+	for {
+		if isFileExists(fileWithPath) {
+			fileWithPath = fileWithPath + fmt.Sprintf("_%d", idx)
+			fmt.Println("File exists, try indexing:", fileWithPath)
+		} else {
+			break
+		}
+		idx++
+	}
+
+	//gpgOptions := []string{"--encrypt", "--yes", "--recipient", keyID, "--output", filepath.Join(filePath, fileName)}
+	gpgOptions := []string{"--encrypt", "--recipient", keyID, "--output", fileWithPath}
 
 	cmd := exec.Command(gpgPath, gpgOptions...)
 	cmd.Stdin = strings.NewReader(content)
