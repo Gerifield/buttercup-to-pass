@@ -18,13 +18,18 @@ There's a `-dryrun` which won't do the conversion just print out the results to 
 
 The script will try to keep the category you had in the path and try to use the site URL as the filename, for example:
 
-If there's a kickstarter.com row in your buttercup csv it'll output the following file:
+If this is your CSV exported from Buttercup:
+```
+!group_id,!group_name,title,username,password,URL,Notes,!group_id,!group_name,id
+471f4616-f5bb-47c2-989e-234567890123,General,kickstarter.com,<your username>,<your password>,https://www.kickstarter.com/,,471f4616-f5bb-47c2-989e-234567890123,General,541d8928-3365-476f-9686-222222222222
+```
+
+It'll write the output to the following file:
 ```
 ~/.password-store/general/www.kickstarter.com
 ```
 
-With the content:
-
+With the following content:
 ```
 <your password>
 title: kickstarter.com
