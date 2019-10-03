@@ -230,7 +230,6 @@ func encryptData(gpgPath string, keyID string, filePath string, fileName string,
 
 	var stdout, stderr bytes.Buffer
 
-
 	idx := 1
 	for {
 		if isFileExists(fileWithPath) {
